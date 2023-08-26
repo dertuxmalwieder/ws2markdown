@@ -43,7 +43,7 @@ fn show_usage() {
         .and_then(OsStr::to_str)
         .map(String::from);
 
-    println!("ws2markdown: a WordStar to Markdown converter.");
+    println!("\tws2markdown: a WordStar to Markdown converter.");
     println!(
         "\tUsage: {0} [inputfile.ws] [outputfile.md]",
         exe_name.as_deref().unwrap_or("ws2markdown")
