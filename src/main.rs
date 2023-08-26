@@ -34,8 +34,7 @@ use std::{
 #[grammar = "wordstar.pest"]
 pub struct WSParser;
 
-fn main() -> Result<()> {
-    let args: Vec<String> = env::args().collect();
+fn show_usage() {
     let exe_name: Option<String> = env::args()
         .next()
         .as_ref()
@@ -43,6 +42,18 @@ fn main() -> Result<()> {
         .and_then(Path::file_name)
         .and_then(OsStr::to_str)
         .map(String::from);
+
+    println!("ws2markdown: a WordStar to Markdown converter.");
+    println!(
+        "\tUsage: {0} [inputfile.ws] [outputfile.md]",
+        exe_name.as_deref().unwrap_or("ws2markdown")
+    );
+    println!("\tIf inputfile = empty, a file picker will appear.");
+    println!("\tIf outputfile = empty, the output will be printed to stdout.");
+}
+
+fn main() -> Result<()> {
+    let args: Vec<String> = env::args().collect();
 
     // Common usage: ws2markdown <input file> <output file>.
     let inputfile: Option<PathBuf>;
@@ -52,16 +63,12 @@ fn main() -> Result<()> {
     // Output options
     let mut left_margin: usize = 0;
 
-    if args.len() == 1 || (args.len() > 1 && &args[1] == "--help" || &args[1] == "-h") {
+    if args.len() > 1 && (&args[1] == "--help" || &args[1] == "-h") {
         // Print usage information.
-        println!("ws2markdown: a WordStar to Markdown converter.");
-        println!(
-            "\tUsage: {0} inputfile.ws [outputfile.md]",
-            exe_name.as_deref().unwrap_or("ws2markdown")
-        );
-        println!("\tIf outputfile = empty, the output will be printed to stdout.");
+        show_usage();
         return Ok(());
     }
+
     if args.len() < 3 {
         // Input or output are missing.
         if args.len() < 2 {
@@ -70,6 +77,12 @@ fn main() -> Result<()> {
                 .add_filter("WordStar File", &["ws", "ws5", "ws6", "ws7"])
                 .set_directory("/")
                 .pick_file();
+
+            if inputfile.is_none() {
+                // The input file dialog was probably canceled.
+                show_usage();
+                return Ok(());
+            }
         } else {
             // Input is there, output is missing.
             inputfile = Some(fs::canonicalize(&args[1])?);
