@@ -1,0 +1,57 @@
+bold_modifier = { '\u{02}'..'\u{02}' }
+italics_modifier = { '\u{19}'..'\u{19}' }
+underline_modifier = { '\u{13}'..'\u{13}' }
+
+integer = @{ ASCII_DIGIT+ }
+
+/// Unsupported (mostly because of how Markdown works):
+/// 00 (right-align // NUL)
+/// 01 (alternate font)
+/// 04 (double-strike)
+/// 0B (center)
+/// 14 (superscript)
+/// 16 (subscript)
+/// 18 (overstrike)
+/// 1B - 1F (extended characters)
+ignored_modifiers =_{ '\u{00}'..'\u{01}' | '\u{04}'..'\u{09}' | '\u{0b}'..'\u{0b}' | '\u{0e}'..'\u{12}' | '\u{14}'..'\u{18}' | '\u{1b}'..'\u{1f}' }
+allowed_modifiers = { bold_modifier | italics_modifier | underline_modifier }
+
+page_break = { '\u{0c}'..'\u{0c}' }
+eof = _{ '\u{1a}'..'\u{1a}' }
+
+/// --- dot commands ---
+
+/// headline: used for the header line
+dot_h1 = { "." ~ ("he" | "h1") }
+dot_h2 = { ".h2" }
+dot_h3 = { ".h3" }
+dot_h4 = { ".h4" }
+dot_h5 = { ".h5" }
+dot_headline = { dot_h1 | dot_h2 | dot_h3 | dot_h4 | dot_h5 }
+
+/// other commands: used for the dot command line
+dot_centering = { ".oc" }
+dot_left_margin = { ".lm" ~ (SPACE_SEPARATOR ~ integer)? }
+dot_line_height = { ".lh" ~ (SPACE_SEPARATOR ~ integer)? }
+dot_page_break = { ".pa" }
+
+/// Unsupported (mostly because of how Markdown works):
+/// .lh (line height <n>)
+/// .oc (centering on/off)
+allowed_dot_commands = { dot_left_margin | dot_page_break }
+ignored_dot_commands = _{ dot_line_height | dot_centering }
+
+/// --- text definitions ---
+
+displayed_text = { (LETTER | NUMBER | PUNCTUATION | SYMBOL | SPACE_SEPARATOR)+ }
+
+comment_line = { ".." ~ SPACE_SEPARATOR* ~ displayed_text ~ (NEWLINE | eof+) }
+header_line = { dot_headline ~ SPACE_SEPARATOR+ ~ displayed_text ~ (NEWLINE | eof+) }
+normal_line = { (allowed_modifiers | ignored_modifiers | displayed_text)* ~ (NEWLINE | eof+) }
+
+dot_command_line = { (allowed_dot_commands | ignored_dot_commands) ~ (NEWLINE | eof+) }
+
+/// note that we skip the 128-byte file header
+/// due to our lossy conversion, however, files can still start with leftover
+/// (ignored) modifiers. recognize, then skip those.
+file = { SOI ~ ignored_modifiers* ~ (dot_command_line | comment_line | header_line | normal_line | page_break)* ~ EOI }
