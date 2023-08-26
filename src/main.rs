@@ -52,7 +52,7 @@ fn main() -> Result<()> {
     // Output options
     let mut left_margin: usize = 0;
 
-    if &args[1] == "--help" || &args[1] == "-h" {
+    if args.len() == 1 || (args.len() > 1 && &args[1] == "--help" || &args[1] == "-h") {
         // Print usage information.
         println!("ws2markdown: a WordStar to Markdown converter.");
         println!(
