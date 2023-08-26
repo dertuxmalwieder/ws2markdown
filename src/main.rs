@@ -104,7 +104,8 @@ fn main() -> Result<()> {
     // Output:
     let mut output_string: String = String::from("");
     for record in parser.into_inner() {
-        // DEBUG: println!("{:#?}", record);
+        // DEBUG:
+        // println!("{:#?}", record);
         match record.as_rule() {
             Rule::header_line => {
                 // h1 to h5
@@ -168,15 +169,31 @@ fn main() -> Result<()> {
                 if dot_pair.as_rule() == Rule::allowed_dot_commands {
                     let dot_command = dot_pair.clone().into_inner().next().unwrap();
                     match dot_command.as_rule() {
-                        // Currently possible: dot_left_margin, dot_page_break
+                        // Currently possible: dot_insert_file, dot_left_margin, dot_page_break
+                        Rule::dot_insert_file => {
+                            // This requires a file name.
+                            let insert_file_command = dot_command.into_inner().next();
+                            if let Some(value) = insert_file_command {
+                                // Insert the file as a link.
+                                let file_link = format!(
+                                    "\n[{0}]({1})\n",
+                                    Path::new(value.as_str())
+                                        .file_name()
+                                        .unwrap()
+                                        .to_str()
+                                        .unwrap(),
+                                    value.as_str()
+                                );
+                                output_string.push_str(&file_link);
+                            }
+                        }
                         Rule::dot_left_margin => {
                             // This can either come with a number (set margin) or without
                             // one (reset margin). We shall simulate it with a number of
                             // non-breaking spaces (set left_margin).
                             let left_margin_command = dot_command.into_inner().next();
                             if let Some(value) = left_margin_command {
-                                let inner_int = value;
-                                left_margin = usize::from_str(inner_int.as_str()).unwrap_or(0);
+                                left_margin = usize::from_str(value.as_str()).unwrap_or(0);
                             } else {
                                 left_margin = 0;
                             }

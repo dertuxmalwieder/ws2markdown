@@ -29,17 +29,24 @@ dot_h4 = { ".h4" }
 dot_h5 = { ".h5" }
 dot_headline = { dot_h1 | dot_h2 | dot_h3 | dot_h4 | dot_h5 }
 
+dot_insert_file = { ".fi " ~ displayed_text }
+
 /// other commands: used for the dot command line
+dot_ask_variable = { ".av" }
 dot_centering = { ".oc" }
+dot_hyphen = { ".hy" }
+dot_footer = @{ ".f" ~ ("o" | NUMBER) ~ (SPACE_SEPARATOR ~ displayed_text)? ~ (NEWLINE | eof+) }
+dot_if = { (".if" ~ ANY+) | ".el" | ".ei" }
+dot_justification = { ".oj" }
+dot_kerning = { ".kr" }
 dot_left_margin = { ".lm" ~ (SPACE_SEPARATOR ~ integer)? }
 dot_line_height = { ".lh" ~ (SPACE_SEPARATOR ~ integer)? }
 dot_page_break = { ".pa" }
 
-/// Unsupported (mostly because of how Markdown works):
-/// .lh (line height <n>)
-/// .oc (centering on/off)
-allowed_dot_commands = { dot_left_margin | dot_page_break }
-ignored_dot_commands = _{ dot_line_height | dot_centering }
+/// A few commands are unsupported (mostly because of how Markdown works).
+/// TODO: I guess that in real life, there are more of them.
+allowed_dot_commands = { dot_insert_file | dot_left_margin | dot_page_break }
+ignored_dot_commands = _{ dot_ask_variable | dot_centering | dot_footer | dot_hyphen | dot_if | dot_justification | dot_kerning | dot_line_height }
 
 /// --- text definitions ---
 
@@ -47,9 +54,8 @@ displayed_text = { (LETTER | NUMBER | PUNCTUATION | SYMBOL | SPACE_SEPARATOR)+ }
 
 comment_line = { ".." ~ SPACE_SEPARATOR* ~ displayed_text ~ (NEWLINE | eof+) }
 header_line = { dot_headline ~ SPACE_SEPARATOR+ ~ displayed_text ~ (NEWLINE | eof+) }
-normal_line = { (allowed_modifiers | ignored_modifiers | displayed_text)* ~ (NEWLINE | eof+) }
-
 dot_command_line = { (allowed_dot_commands | ignored_dot_commands) ~ (NEWLINE | eof+) }
+normal_line = { (allowed_modifiers | ignored_modifiers | displayed_text)* ~ (NEWLINE | eof+) }
 
 /// note that we skip the 128-byte file header
 /// due to our lossy conversion, however, files can still start with leftover
