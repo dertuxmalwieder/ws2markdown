@@ -2,6 +2,10 @@
 
 This is a small utility that converts WordStar (*.ws*) into Markdown (*.md*) files.
 
+## Installation
+
+&nbsp;% cargo install ws2markdown
+
 ## Usage
 
 &nbsp;% ws2markdown input.ws [output.md]
