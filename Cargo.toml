@@ -1,9 +1,13 @@
 [package]
 name = "ws2markdown"
-version = "0.1.0"
+description = "A WordStar to Markdown converter"
+version = "0.2.0"
 authors = ["Cthulhux <git@tuxproject.de>"]
 edition = "2021"
 license = "CDDL-1.1"
+repository = "https://code.rosaelefanten.org/ws2markdown"
+categories = ["command-line-utilities"]
+keywords = ["wordstar", "markdown"]
 
 [dependencies]
 anyhow = "1.0"
